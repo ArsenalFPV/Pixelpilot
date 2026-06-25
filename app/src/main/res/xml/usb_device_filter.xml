@@ -10,6 +10,9 @@
         product-id="881B"
         vendor-id="0BDA" /> <!-- RTL8812AU-VL -->
     <usb-device
+        product-id="A81A"
+        vendor-id="0BDA" /> <!-- RTL8812EU -->
+    <usb-device
         product-id="0101"
         vendor-id="2357" /> <!-- Archer T4U -->
     <usb-device
