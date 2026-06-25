@@ -28,18 +28,43 @@ public class UsbDeviceFilter {
             if (eventType == XmlResourceParser.START_TAG) {
                 String tag = parser.getName();
                 if (tag.equals("usb-device")) {
-                    String vendorIdString = parser.getAttributeValue(null, "vendor-id");
-                    String productIdString = parser.getAttributeValue(null, "product-id");
+                    String vendorIdString = null;
+                    String productIdString = null;
 
-                    int vendorId = Integer.parseInt(vendorIdString, 16);
-                    int productId = Integer.parseInt(productIdString, 16);
+                    for (int i = 0; i < parser.getAttributeCount(); i++) {
+                        String attrName = parser.getAttributeName(i);
+                        if ("vendor-id".equals(attrName)) {
+                            vendorIdString = parser.getAttributeValue(i);
+                        } else if ("product-id".equals(attrName)) {
+                            productIdString = parser.getAttributeValue(i);
+                        }
+                    }
 
-                    UsbDeviceFilter device = new UsbDeviceFilter(vendorId, productId);
-                    devices.add(device);
+                    if (vendorIdString != null && productIdString != null) {
+                        try {
+                            int vendorId = parseHexOrDec(vendorIdString);
+                            int productId = parseHexOrDec(productIdString);
+                            devices.add(new UsbDeviceFilter(vendorId, productId));
+                        } catch (NumberFormatException e) {
+                            android.util.Log.e("pixelpilot", "Failed to parse USB filter: VID=" + vendorIdString + " PID=" + productIdString);
+                        }
+                    }
                 }
             }
             eventType = parser.next();
         }
         return devices;
+    }
+
+    private static int parseHexOrDec(String s) {
+        if (s.startsWith("0x") || s.startsWith("0X")) {
+            return Integer.parseInt(s.substring(2), 16);
+        } else {
+            try {
+                return Integer.parseInt(s, 16);
+            } catch (NumberFormatException e) {
+                return Integer.parseInt(s);
+            }
+        }
     }
 }

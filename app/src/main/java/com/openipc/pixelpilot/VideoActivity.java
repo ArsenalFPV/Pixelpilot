@@ -238,6 +238,18 @@ public class VideoActivity extends AppCompatActivity implements IVideoParamsChan
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.d(TAG, "onNewIntent: " + intent.getAction());
+        setIntent(intent);
+        if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(intent.getAction())) {
+            if (wfbLinkManager != null) {
+                wfbLinkManager.refreshAdapters();
+            }
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "lifecycle onCreate");
         super.onCreate(savedInstanceState);

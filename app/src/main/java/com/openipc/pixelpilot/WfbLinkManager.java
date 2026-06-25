@@ -83,7 +83,7 @@ public class WfbLinkManager extends BroadcastReceiver {
                 return;
             }
             Log.d(TAG, "usb device attached: " + dev.getVendorId() + "/" + dev.getProductId());
-            // No need to refresh since this should trigger a call to VideoActivity.onReceive();
+            refreshAdapters();
         } else if (ACTION_USB_PERMISSION.equals(intent.getAction())) {
             Log.d(TAG, "Permission handled");
         }
@@ -102,8 +102,19 @@ public class WfbLinkManager extends BroadcastReceiver {
         }
 
         Map<String, UsbDevice> res = new HashMap<>();
-        for (UsbDevice dev : manager.getDeviceList().values()) {
+        Map<String, UsbDevice> deviceList = manager.getDeviceList();
+        if (deviceList == null || deviceList.isEmpty()) {
+            Log.d(TAG, "No USB devices connected.");
+            return res;
+        }
+
+        Log.d(TAG, "Checking " + deviceList.size() + " connected USB devices...");
+
+        for (UsbDevice dev : deviceList.values()) {
             boolean allowed = false;
+            Log.d(TAG, String.format("Found connected USB device: VID=%04X, PID=%04X, Name=%s",
+                    dev.getVendorId(), dev.getProductId(), dev.getDeviceName()));
+
             for (UsbDeviceFilter filter : filters) {
                 if (filter.productId == dev.getProductId() && filter.vendorId == dev.getVendorId()) {
                     allowed = true;
@@ -113,6 +124,7 @@ public class WfbLinkManager extends BroadcastReceiver {
             if (!allowed) {
                 continue;
             }
+            Log.d(TAG, String.format("Device VID=%04X, PID=%04X is supported.", dev.getVendorId(), dev.getProductId()));
             res.put(dev.getDeviceName(), dev);
         }
         return res;
